@@ -1,0 +1,9 @@
+docling==2.102.2
+langchain_text_splitters==1.1.2
+nltk==3.9.4
+ollama==0.6.2
+pdfplumber==0.11.9
+pytesseract==0.3.13
+python-dotenv==1.2.2
+rank_bm25==0.2.2
+sentence_transformers==5.5.1
