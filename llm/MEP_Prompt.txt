@@ -1,16 +1,3 @@
-def build_context(top_chunks):
-    context = ""
-
-    for i, chunk in enumerate(top_chunks, 1):
-        context += f"\n### Chunk {i}\n"
-        context += chunk["text"]
-        context += "\n"
-
-    return context
-
-
-def build_prompt(fund_name, context):
-    prompt = """
 You are an Intelligent Document Processing engine.
 
 Target Fund Name:
@@ -98,15 +85,15 @@ MONTHLY PERFORMANCE TABLES
 
 17. Identify all years and select the numerically largest year.
 
-18. Restrict all further extraction exclusively to the selected year.
+18. Restrict further extraction to the selected year.
 
-19. Treat only the cells belonging to the selected year as valid candidates. Ignore all values from every other year, even if they appear in the same row.
+19. Identify all valid month-return pairs belonging to the selected year.
 
-20. Build the complete set of valid month-return pairs using only non-empty cells from the selected year. If the selected year's cell for a month is blank, discard that month completely.
+20. Build the complete set of valid month-return pairs before making a selection.
 
-21. Do not stop after finding the first valid month-return pair. Continue until every month belonging to the selected year has been evaluated.
+21. Do not stop after finding the first valid value.
 
-22. From the complete set of valid month-return pairs for the selected year, select the chronologically latest month. The corresponding return value from that same month and selected year is the MTD.
+22. Select the chronologically latest month among the valid month-return pairs.
 
 23. Month = selected month.
 
@@ -221,9 +208,3 @@ Weak evidence or high uncertainty.
 Document:
 
 {context}
-""".format(
-        fund_name=fund_name,
-        context=context
-    )
-
-    return prompt

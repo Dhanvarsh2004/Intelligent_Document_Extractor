@@ -8,6 +8,16 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 
 from extraction.pdf_detector import is_digital_pdf
+from threading import Lock
+
+pdf_lock = Lock()
+
+def extract_pdf(pdf_path):
+    with pdf_lock:
+        # Entire extraction runs one at a time
+        ...
+        result = converter.convert(pdf_path)
+        return result.document.export_to_markdown()
 
 
 #---------------------------------------------------------------

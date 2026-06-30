@@ -8,7 +8,7 @@ def call_llm(prompt):
     # LLM Call
 
     response = chat(
-        model="devstral-2:123b-cloud",
+        model="gpt-oss:120b-cloud",
         messages=[
             {
                 "role": "user",

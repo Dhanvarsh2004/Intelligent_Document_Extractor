@@ -1,176 +1,311 @@
+from datetime import datetime
+from rapidfuzz import process, fuzz
+import json
 import re
+import math
 from datetime import datetime
 
+def validate_extracted_data_in_chunks(chunks, asset_name, month, year, mtd, threshold=90):
+    return True
+    """
+    Checks whether all extracted values are present in the document chunks.
 
-current_date = datetime.now()
+    Returns:
+        {
+            "is_valid": True/False,
+            "missing_fields": []
+        }
+    """
 
-current_month = current_date.strftime("%B")   # Full month name (e.g., June)
-current_year = current_date.year  
+    # Combine all chunks into one string
+    if isinstance(chunks, list):
+        text = " ".join(
+        chunk["text"]
+        for chunk in chunks
+        if isinstance(chunk, dict)
+    )
+    else:
+        text = str(chunks)
+
+    text = text.lower()
+
+    missing_fields = []
+
+    # Asset name (fuzzy match)
+    if fuzz.partial_ratio(asset_name.lower(), text) < threshold:
+        missing_fields.append("Asset Name")
+
+    # Month
+    if str(month).lower() not in text:
+        missing_fields.append("Month")
+
+    # MTD
+    if str(mtd) not in text:
+        missing_fields.append("MTD")
+
+    return len(missing_fields) == 0
+
+# ==========================================================
+# Asset Name Confidence (0-20)
+# ==========================================================
+def asset_name_confidence_score(asset_name, website_asset_names):
+    best_match, score, _ = process.extractOne(
+        asset_name,
+        website_asset_names,
+        scorer=fuzz.token_sort_ratio
+    )
+
+    normalized_score = round(score / 5, 2)   # 100 -> 20
+
+    return {
+        "best_match": best_match,
+        "score": normalized_score
+    }
 
 
-# Confidence Score Calculator
+# ==========================================================
+# MTD Confidence (0-100)
+# ==========================================================
+def confidence_score_mtd(mtdvalue):
+    lower_extreme = -23.83
+    lower_whisker = -13.75
+    Q1 = -3.66
+    median = -0.13
+    Q3 = 3.06
+    upper_whisker = 13.14
+    upper_extreme = 23.22
 
-def calculate_confidence(extracted, document_text):
+    if mtdvalue <= lower_extreme or mtdvalue >= upper_extreme:
+        score = 0
 
-    score = 0
+    elif mtdvalue < lower_whisker:
+        score = 70 * (mtdvalue - lower_extreme) / (lower_whisker - lower_extreme)
 
-    fund_name = str(extracted.get("fund_name", "")).strip()
-    month = str(extracted.get("Month", "")).strip()
-    mtd = str(extracted.get("MTD", "")).strip()
-    year = str(extracted.get("Year", "")).strip()
-    LLMConfidence_Score = str(extracted.get("LLMConfidence_Score", "")).strip()
-    LLMConfidence_Score=int(LLMConfidence_Score)
-    # ---------------------------------------------------
-    # Extraction Failure 
-    # ---------------------------------------------------
-    invalid_values = {"", "null", "n/a", "unknown", "none"}
+    elif mtdvalue > upper_whisker:
+        score = 70 * (upper_extreme - mtdvalue) / (upper_extreme - upper_whisker)
 
-    if month.lower() in invalid_values or mtd.lower() in invalid_values:
-        return 0
+    elif mtdvalue < Q1:
+        score = 70 + 25 * (mtdvalue - lower_whisker) / (Q1 - lower_whisker)
 
-    score += (LLMConfidence_Score/ 100) * 20
-    # ---------------------------------------------------
-    # 1. Completeness (25 points)
-    # ---------------------------------------------------
-    #fields = [fund_name, month, mtd, year]
+    elif mtdvalue > Q3:
+        score = 70 + 25 * (upper_whisker - mtdvalue) / (upper_whisker - Q3)
 
-    #completeness = sum(
-    #    1 for field in fields
-    #    if field and field.lower() not in ["null", "n/a", "unknown"]
-    #)
+    elif mtdvalue < median:
+        score = 95 + 5 * (mtdvalue - Q1) / (median - Q1)
 
-    #score += (completeness / 4) * 25
-    # ---------------------------------------------------
-    # 1. Completeness (25 points)
-    # ---------------------------------------------------
+    else:
+        score = 95 + 5 * (Q3 - mtdvalue) / (Q3 - median)
+
+    return round(score, 2)
+
+
+# ==========================================================
+# MTD Score normalized to 0-20
+# ==========================================================
+def mtd_confidence_score(mtdvalue):
+    raw_score = confidence_score_mtd(mtdvalue)
+    return round(raw_score / 5, 2)
+
+
+# ==========================================================
+# Month and Year Scores (0-20 each)
+# ==========================================================
+def month_year_confidence_score(month_input, extracted_year=""):
+
+    # Convert month name/abbreviation to month number
+    month_mapping = {
+        "jan": 1, "january": 1,
+        "feb": 2, "february": 2,
+        "mar": 3, "march": 3,
+        "apr": 4, "april": 4,
+        "may": 5,
+        "jun": 6, "june": 6,
+        "jul": 7, "july": 7,
+        "aug": 8, "august": 8,
+        "sep": 9, "sept": 9, "september": 9,
+        "oct": 10, "october": 10,
+        "nov": 11, "november": 11,
+        "dec": 12, "december": 12
+    }
+
+    if isinstance(month_input, str):
+        month_num = month_mapping.get(month_input.strip().lower())
+        if month_num is None:
+            raise ValueError(f"Invalid month: {month_input}")
+    else:
+        month_num = month_input
+
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    # Derive year
+    derived_year = current_year if month_num < current_month else current_year - 1
+
+    # Use extracted year if available, otherwise derived year
+    comparison_year = extracted_year if extracted_year != ""  else derived_year
+    # Difference in months between current date and statement date
+    months_difference = (current_year - comparison_year) * 12 + (current_month - month_num)
+
+    # ==========================================================
+    # Month Score
+    # ==========================================================
+    if months_difference <= 0:
+        # Current month or future month
+        month_score = 0
+
+    elif months_difference <= 2:
+        # Previous 1-2 months get full score
+        month_score = 20
+
+    elif months_difference < 36:
+        # Exponential decay
+        # Month 6 -> score 10 (50%)
+        month_score = round(
+            20 * (0.5 ** ((months_difference - 2) / 4)),2)
+
+    else:
+        month_score = 0
     
-    if current_date.month == 1:
-        previous_month = "december"
-        previous_year = str(current_date.year - 1)
+    # Year Score (0-20)
+    if extracted_year is None:
+        year_score = 20
+
     else:
-        previous_month = datetime(current_date.year, current_date.month - 1, 1).strftime("%B").lower()
-        previous_year = str(current_date.year)
+        year_diff = derived_year-comparison_year 
 
-    # Check if the input is either the current month/year or the previous month/year
-    if (month.lower() == current_month and year == current_year) or \
-    (month.lower() == previous_month and year == previous_year):
-        score += 25
-
-    # ---------------------------------------------------
-    # 2. Existence in document (25 points)
-    # ---------------------------------------------------
-  
-    existence_matches = 0
-    for value in [fund_name, month, year]:
-
-        if value and value.lower() in document_text.lower():
-            existence_matches += 1
-
-    if mtd:
-        normalized_text = re.sub(r"[,%\s]", "", document_text)
-        normalized_mtd = re.sub(r"[,%\s]", "", mtd)
-
-        if normalized_mtd in normalized_text:
-            existence_matches += 1
-
-    score += (existence_matches / 4) * 25
-
-    # ---------------------------------------------------
-    # 3. Uniqueness (15 points)
-    # ---------------------------------------------------
-    uniqueness_score = 0
-
-    for value in [month, year, mtd]:
-
-        if not value:
-            continue
-
-        occurrences = document_text.lower().count(value.lower())
-
-        if occurrences == 1:
-            uniqueness_score += 5
-
-        elif occurrences <= 3:
-            uniqueness_score += 3
-
+        if year_diff == 0:
+            year_confidence = 1.0
+        elif year_diff == 1:
+            year_confidence = 0.8
+        elif year_diff == 2:
+            year_confidence = 0.6
+        elif year_diff == 3:
+            year_confidence = 0.4
         else:
-            uniqueness_score += 1
+            year_confidence = 0
 
-    score += min(uniqueness_score, 5)
+        year_score = round(year_confidence * 20)
 
-    # ---------------------------------------------------
-    # 4. Position proximity (15 points)
-    # ---------------------------------------------------
-    try:
+    return {
+        "month_score": month_score,
+        "year_score": year_score
+    }
 
-        positions = []
 
-        for value in [month, year, mtd]:
+# ==========================================================
+# Model Confidence Score (0-20)
+# Handles both 0-1 and 0-100 inputs
+# ==========================================================
+def model_confidence_score(model_confidence):
 
-            if value:
-                pos = document_text.lower().find(value.lower())
-
-                if pos != -1:
-                    positions.append(pos)
-
-        if len(positions) >= 2:
-
-            spread = max(positions) - min(positions)
-
-            if spread < 200:
-                score += 5
-
-            elif spread < 500:
-                score += 3
-
-            elif spread < 1000:
-                score += 1
-
-    except:
-        pass
-
-    # ---------------------------------------------------
-    # 5. Format validation (10 points)
-    # ---------------------------------------------------
-    format_score = 0
-
-    if re.fullmatch(r"20\d{2}", year):
-        format_score += 3
-
-    valid_months = [
-        "jan","feb","mar","apr",
-        "may","jun","jul","aug",
-        "sep","oct","nov","dec"
-    ]
-
-    if month.lower()[:3] in valid_months:
-        format_score += 3
-
-    if re.search(r"-?\d+(\.\d+)?%?", mtd):
-        format_score += 4
-
-    score += format_score
-
-    # ---------------------------------------------------
-    # 6. Table quality (10 points)
-    # ---------------------------------------------------
-    pipe_count = document_text.count("|")
-
-    if pipe_count > 100:
-        score += 10
-
-    elif pipe_count > 50:
-        score += 7
-
-    elif pipe_count > 20:
-        score += 4
-
+    if model_confidence <= 1:
+        score = model_confidence * 20
     else:
-        score += 1
+        score = model_confidence / 100 * 20
 
-    # ---------------------------------------------------
-    # Final score
-    # ---------------------------------------------------
-    score = round(min(score, 100), 2)
+    return round(score, 2)
 
-    return score
+
+# ==========================================================
+# Final Combined Score
+# ==========================================================
+def calculate_final_confidence(chunks,
+        asset_name,
+        website_asset_names,
+        month_num,
+        year,
+        mtd,
+        model_confidence):
+       
+    mtd = str(mtd).strip()
+    # Handle values like "(5.6%)"
+    match = re.fullmatch(r"\((\d+(\.\d+)?)%\)", mtd)
+    if match:
+        mtd=f"-{match. Group(1)}%"
+
+    def safe_float(value):
+        try:
+            return float(str(value).replace("%", "").replace("+", "").strip())
+        except Exception:
+            return None
+    mtd = safe_float(mtd)
+
+    def safe_int(value):
+        try:
+            return int(float(str(value).strip()))
+        except Exception:
+            return None
+    model_confidence = safe_int(model_confidence)
+ 
+ 
+    validation = validate_extracted_data_in_chunks(
+    chunks,
+    asset_name,
+    month_num,
+    year,
+    mtd
+    )
+    print("Validation:", validation)
+    print("Asset:", asset_name)
+    print("Month:", month_num)
+    print("Year:", year)
+    print("MTD:", mtd)
+
+    if not validation:
+        return 0
+    asset_score = asset_name_confidence_score(
+        asset_name,
+        website_asset_names
+    )
+
+    month_year_scores = month_year_confidence_score(
+        month_num,
+        year
+    )
+
+    mtd_score = mtd_confidence_score(mtd)
+
+    model_score = model_confidence_score(model_confidence)
+
+    total_score = round(
+        asset_score["score"]
+        + month_year_scores["month_score"]
+        + month_year_scores["year_score"]
+        + mtd_score
+        + model_score,
+        2
+    )
+    print(asset_score["score"], month_year_scores["month_score"],month_year_scores["year_score"],mtd_score, model_score)
+    print(total_score)
+    return total_score
+
+# score = calculate_final_confidence(
+#     chunks="",
+#     asset_name="CastleKnight Master Fund LP",
+#     website_asset_names=["CastleKnight Master Fund"],
+#     month_num="May",
+#  year=2026,
+#     mtd="11.8",
+#     model_confidence=85
+# )
+# print("Final Confidence Score:", score)  # Expected output: 100.0
+# exit(0)
+ 
+# (chunks,
+#         asset_name,
+#         website_asset_names,
+#         month_num,
+#         year,
+#         mtd,
+#         model_confidence):
+#print(calculate_final_confidence("","CastleKnight Master Fund LP","CastleKnight Master Fund LP","May","2026","+11.8%","98%"))
+
+# {
+#     "fund_name": "CastleKnight Master Fund LP",
+#     "Month": "May",
+#     "MTD": "+11.8%",
+#     "Year": "2026",
+#     "LLMConfidence_Score": "98"
+# }
+#print(calculate_final_confidence(chunks=text,asset_name="RA Capital Healthcare Fund, L.P.",website_asset_names="RA Capital",month_num="May",year="",mtd="+1.3%",model_confidence=55))

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Insight AI - Review Queue</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+
+:root{
+    --primary:#0d6efd;
+    --primary-dark:#084298;
+    --warning:#ffc107;
+    --bg:#f4f7fc;
+}
+
+body{
+    background:var(--bg);
+    font-family:'Segoe UI',sans-serif;
+    overflow-x:hidden;
+
+    
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+.sidebar{
+    background:white;
+    min-height:100vh;
+    border-right:1px solid #e5e7eb;
+    box-shadow:0 0 25px rgba(0,0,0,.05);
+}
+
+.logo-section{
+    padding:22px 20px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.insight-logo{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.logo-icon{
+    width:62px;
+    height:62px;
+    border-radius:16px;
+    background:linear-gradient(
+        135deg,
+        #0d6efd,
+        #084298
+    );
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:28px;
+}
+
+.logo-title{
+    font-size:32px;
+    font-weight:700;
+    color:#084298;
+}
+
+.nav-title{
+    padding:15px 25px 5px;
+    font-size:12px;
+    color:#adb5bd;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+.list-group-item{
+
+    border:none;
+
+    padding:20px 25px;
+
+    font-weight:700;
+
+    font-size:18px;
+
+    transition:.3s;
+
+}
+
+.list-group-item:hover{
+
+    background:#eef4ff;
+
+    transform:translateX(6px);
+
+}
+
+.list-group-item.active{
+
+    background:#a63f70;
+
+    border-color:#a63f70;
+
+}
+
+
+.list-group-item i{
+    margin-right:12px;
+}
+
+.main-content{
+    padding:30px;
+}
+
+.dashboard-header{
+
+    background:linear-gradient(
+        135deg,
+        #c55181,
+        #882d56
+    );
+
+    color:white;
+
+    padding:30px;
+
+    border-radius:20px;
+
+    margin-bottom:25px;
+
+    box-shadow:0 10px 30px rgba(176,111,138,.25);
+
+}
+
+.header-title{
+    font-size:34px;
+    font-weight:700;
+}
+
+.card{
+
+    border:none;
+
+    border-radius:18px;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 12px 25px rgba(0,0,0,.12);
+
+}
+
+.table thead th{
+    background:#c03670;
+    color:white;
+    border:none;
+}
+
+.table tbody tr:hover{
+    background:#f5f9ff;
+}
+
+.edit-box{
+    min-width:120px;
+}
+
+.footer{
+    text-align:center;
+    color:gray;
+    margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid">
+
+<div class="row">
+
+<div class="col-lg-2 col-md-3 sidebar p-0">
+
+<div class="logo-section">
+
+<div class="insight-logo">
+
+<div class="logo-icon">
+
+<i class="bi bi-cpu-fill"></i>
+
+</div>
+
+<span class="logo-title">
+
+Insight AI
+
+</span>
+
+</div>
+
+</div>
+
+<div class="nav-title">
+
+NAVIGATION
+
+</div>
+
+<div class="list-group list-group-flush">
+
+<a href="index.html"
+class="list-group-item list-group-item-action">
+
+<i class="bi bi-speedometer2"></i>
+
+Dashboard
+
+</a>
+
+<a href="review.html"
+class="list-group-item list-group-item-action active">
+
+<i class="bi bi-pencil-square"></i>
+
+Review Queue
+
+</a>
+
+<a href="success.html"
+class="list-group-item list-group-item-action">
+
+<i class="bi bi-check-circle-fill"></i>
+
+Success Documents
+
+</a>
+
+</div>
+
+</div>
+
+<div class="col-lg-10 col-md-9 main-content">
+
+<div class="dashboard-header">
+
+    <div class="d-flex justify-content-between align-items-center">
+
+        <div>
+
+            <div class="header-title">
+
+                Review Queue
+
+            </div>
+
+            <div style="font-size:15px;opacity:.9;">
+
+                Documents awaiting human validation and approval
+
+            </div>
+
+        </div>
+
+        <div>
+
+            <i class="bi bi-pencil-square"
+               style="font-size:50px;"></i>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+<div class="card-body">
+
+<h4 class="mb-4">
+
+Review Documents
+
+</h4>
+
+<div class="table-responsive">
+
+<table class="table table-bordered table-hover">
+
+<thead>
+
+<tr>
+
+<th>Document Name</th>
+<th>Month</th>
+<th>Year</th>
+<th>Asset Name</th>
+<th>MTD Value</th>
+<th>Confidence %</th>
+<th>Created Date</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="reviewTableBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div
+class="d-flex justify-content-between align-items-center mt-3">
+
+<div>
+
+<span id="recordInfo"></span>
+
+</div>
+
+<div>
+
+<button
+class="btn btn-outline-primary btn-sm"
+onclick="previousPage()">
+
+Previous
+
+</button>
+
+<span
+id="pageNumber"
+class="mx-3 fw-bold">
+
+Page 1
+
+</span>
+
+<button
+class="btn btn-outline-primary btn-sm"
+onclick="nextPage()">
+
+Next
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="text-center text-muted mt-4 mb-3">
+
+© 2026 Insight AI |
+Document Intelligence Platform POC Version 2.0
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let reviewData = [];
+
+let currentPage = 1;
+
+const rowsPerPage = 12;
+
+async function loadReviewData(){
+
+    try{
+
+        const response =
+            await fetch(
+                'http://127.0.0.1:8000/review-items'
+            );
+
+        reviewData =
+            await response.json();
+
+        renderTable();
+
+    }
+    catch(error){
+
+        console.error(error);
+
+    }
+
+}
+function formatDate(dateString){
+
+    const date =
+        new Date(dateString);
+
+    return date.toLocaleString();
+
+}
+
+function renderTable(){
+     
+
+    const tbody =
+        document.getElementById(
+            "reviewTableBody"
+        );
+
+    tbody.innerHTML = "";
+
+    if(reviewData.length === 0){
+
+        tbody.innerHTML = `
+
+        <tr>
+
+            <td colspan="8"
+                style="
+                    text-align:center;
+                    color:gray;
+                    font-style:italic;
+                    padding:20px;
+                ">
+
+                No Documents Pending Review
+
+            </td>
+
+        </tr>
+
+        `;
+
+        document.getElementById(
+            "recordInfo"
+        ).innerText =
+            "Showing 0 records";
+
+        return;
+
+    }
+
+    const start =
+        (currentPage - 1)
+        * rowsPerPage;
+
+    const end =
+        start + rowsPerPage;
+
+    const pageData =
+        reviewData.slice(
+            start,
+            end
+        );
+
+    pageData.forEach(item => {
+        console.log(item);
+console.log(item.createdDate);
+
+tbody.innerHTML += `
+
+<tr>
+
+<td class="align-middle fw-semibold">
+
+${item.documentName}
+
+</td>
+
+<td>
+
+<input
+class="form-control edit-box"
+id="month_${item.reviewId}"
+value="${item.month}">
+
+</td>
+
+<td>
+
+<input
+class="form-control edit-box"
+id="year_${item.reviewId}"
+value="${item.year}">
+
+</td>
+
+<td>
+
+<input
+class="form-control edit-box"
+id="asset_${item.reviewId}"
+value="${item.assetName}">
+
+</td>
+
+<td>
+
+<input
+class="form-control edit-box"
+id="mtd_${item.reviewId}"
+value="${item.mtdValue}">
+
+</td>
+
+<td class="align-middle">
+
+<span
+class="badge bg-warning text-dark">
+
+${Number(
+item.confidence
+).toFixed(2)}%
+
+</span>
+
+</td>
+
+<td class="align-middle">
+
+${formatDate(
+    item.createdDate
+)}
+
+</td>
+
+<td class="align-middle">
+
+<button
+class="btn btn-success btn-sm"
+onclick="approveItem(${item.reviewId})">
+
+✓ Approve
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+    });
+
+    document.getElementById(
+        "pageNumber"
+    ).innerText =
+        "Page " + currentPage;
+
+    document.getElementById(
+        "recordInfo"
+    ).innerText =
+
+        "Showing "
+
+        + (start + 1)
+
+        + " to "
+
+        + Math.min(
+            end,
+            reviewData.length
+        )
+
+        + " of "
+
+        + reviewData.length
+
+        + " records";
+
+}
+
+async function approveItem(reviewId){
+
+    const payload = {
+
+        reviewId: reviewId,
+
+        documentName:
+
+        reviewData.find(
+            x => x.reviewId == reviewId
+        ).documentName,
+
+        month:
+        document.getElementById(
+            `month_${reviewId}`
+        ).value,
+
+        year:
+        document.getElementById(
+            `year_${reviewId}`
+        ).value,
+
+        assetName:
+        document.getElementById(
+            `asset_${reviewId}`
+        ).value,
+
+        mtdValue:
+        document.getElementById(
+            `mtd_${reviewId}`
+        ).value
+        
+    };
+
+    const response =
+
+        await fetch(
+
+            'http://127.0.0.1:8000/approve-review',
+
+            {
+
+                method:'POST',
+
+                headers:{
+                    'Content-Type':'application/json'
+                },
+
+                body:JSON.stringify(
+                    payload
+                )
+
+            }
+
+        );
+
+    const result =
+        await response.json();
+
+    alert(result.message);
+
+    loadReviewData();
+
+}
+
+function nextPage(){
+
+    const totalPages =
+
+        Math.ceil(
+
+            reviewData.length /
+
+            rowsPerPage
+
+        );
+
+    if(currentPage < totalPages){
+
+        currentPage++;
+
+        renderTable();
+
+    }
+
+}
+
+function previousPage(){
+
+    if(currentPage > 1){
+
+        currentPage--;
+
+        renderTable();
+
+    }
+
+}
+
+loadReviewData();
+
+setInterval(
+    loadReviewData,
+    15000
+);
+
+</script>
+
+</body>
+
+</html>

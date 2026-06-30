@@ -6,7 +6,6 @@ def extract_pages_as_pdf(pdf_path, page_numbers, output_folder="ExtractedPages")
     pdf_path = Path(pdf_path)
     output_folder = Path(output_folder)
     output_folder.mkdir(exist_ok=True)
-
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
 
@@ -26,3 +25,4 @@ def extract_pages_as_pdf(pdf_path, page_numbers, output_folder="ExtractedPages")
         writer.write(f)
 
     print(f"Saved: {output_file}")
+    return output_file

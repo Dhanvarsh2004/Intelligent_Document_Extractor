@@ -1,0 +1,8 @@
+{
+    "totalDocuments": 10,
+    "approvedDocuments": 40,
+    "reviewDocuments": 8,
+    "rejectedDocuments": 4,
+    "systemStatus": "Chunking",
+    "progressPercentage": 80
+}
