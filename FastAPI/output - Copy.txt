@@ -1,0 +1,70 @@
+
+### Chunk 1
+## Risk/Reward
+
+| Time Period: 3/1/2017 to 8/31/2024   |           |                      | Time Period: 3/1/2017 to 8/31/2024   |             |                      |
+|--------------------------------------|-----------|----------------------|--------------------------------------|-------------|----------------------|
+|                                      | Vicksburg | BBGMuni Total Return |                                      | Vicksburg   | BBGMuni Total Return |
+| Up Period Percent                    | 84.44     | 61.11                | Return                               | 24.57       | 2.38                 |
+| Down Period Percent                  | 15.56     | 38.89                | Std Dev Alpha                        | 12.63 20.81 | 5.49 0.33            |
+| Best Month                           | 13.23     | 6.35                 | Beta                                 | 0.83        | 0.42                 |
+| Worst Month                          | -17.78    | -3.84                | R2                                   | 28.33       | 38.12                |
+| Best Quarter                         | 30.88     | 7.89                 | Excess Return Sharpe Ratio           | 22.73 1.65  | 0.54 0.06            |
+| Worst Quarter                        | -14.22    | -6.23                | Sortino Ratio                        | 2.85        | 0.08                 |
+
+### Chunk 2
+## Investment Strategy
+
+Vicksburg Trading Fund actively trades high grade municipal bonds in both the primary and secondary market. The fund utilizes leverage and hedging strategies to mitigate interest rate risk. In addition to trading block size amounts, the fund also employs a systematic electronic trading strategy that leverages its proprietary algorithmic models to bid and re-offer odd-lot municipal bonds. Customized electronic connectivity vehicles help facilitate the large volume of trading with the fund's counterparties.
+
+| Key Facts                    |                                          |
+|------------------------------|------------------------------------------|
+| Inception Date               | 2/2/2017                                 |
+| Minimum Initial              | $ 1,000,000                              |
+| Advisor                      | 16th Amendment Advisors                  |
+| Phone                        | 1 (212) 332-1600                         |
+| Firm Email                   | info@16thadvisors.com                    |
+| GIPS Compliance              | Yes                                      |
+| General Information          |                                          |
+| Management Fee               | 2%                                       |
+| Performance Fee              | 30%                                      |
+| High Watermark               | Yes                                      |
+| Investor Gate                | 25%                                      |
+| Redemptions                  | Quarterly &#124; 60 days notice          |
+| Subscriptions                | Monthly                                  |
+| US &#124; Offshore Investors | Yes &#124; Yes                           |
+| Operations                   |                                          |
+| Prime Broker                 | BNY Pershing, RJ O'Brien, Charles Schwab |
+| Middle Office                | Clearwater Analytics                     |
+| Administrator                | SGGG Fund Services Inc                   |
+| Legal Counsel                | Purrington Moody Weil LLP                |
+| Offshore Counsel             | Ogier                                    |
+| Auditor                      | Elliott Davis, Llc                       |
+
+### Chunk 3
+## Trailing Period Returns (Net of All Fees)
+
+<!-- image -->
+
+Vicksburg Municipal Trading Fund LP
+
+Bloomberg Municipal TR USD
+
+### Chunk 4
+Returns reflect the performance of the Vicksburg Municipal Trading Fund LP (the 'Master Fund') for the period indicated, net of all fees and expenses incurred at the Master Fund level, including the
+
+### Chunk 5
+## Monthly Returns (Net of All Fees)
+
+Bloomberg Municipal Yield TR USDU
+
+|      |   Jan |   Feb |    Mar |   Apr |   May |   Jun |   Jul |   Aug |   Sep |   Oct |   Nov |   Dec |   Year |
+|------|-------|-------|--------|-------|-------|-------|-------|-------|-------|-------|-------|-------|--------|
+| 2024 |  2.31 |  1.27 |   0.23 |  2.65 | -5.64 |  4.20 |  1.79 |  2.61 |  2.59 |       |       |       |        |
+| 2023 |  3.47 |  0.04 |   1.61 |  4.57 |  2.43 |  5.73 |  5.05 |  2.04 | -0.99 |  0.91 |  7.83 |  4.45 |  43.68 |
+| 2022 | -3.80 |  1.05 |  -2.57 | -1.92 | 10.67 |  1.18 |  5.36 |  0.05 |  1.07 |  5.50 |  6.63 |  1.57 |  26.63 |
+| 2021 |  3.27 | -0.13 |   5.29 |  2.88 |  2.59 | -1.69 |  1.38 |  0.59 |  2.04 |  1.52 |  3.24 |  1.76 |  25.05 |
+| 2020 |  2.37 |  1.91 | -17.78 | 13.23 | 12.41 |  2.83 |  5.46 |  1.54 |  1.97 |  5.99 |  5.53 |  3.35 |  41.71 |
+| 2019 |  0.62 |  1.05 |   3.29 |  1.55 |  0.23 |  0.26 |  0.45 |  2.75 |  1.14 |  2.19 |  2.67 |  4.37 |  22.51 |
+| 2018 | -3.39 |  0.03 |   0.63 |  0.67 |  2.12 | -0.51 |  0.21 |  0.30 | -0.62 | -0.44 |  1.55 |  0.18 |   0.63 |
+| 2017 |       |       |   1.27 |  2.37 |  5.62 |  0.13 |  2.17 |  3.18 | -0.45 |  0.17 | -0.82 |  4.47 |        |
