@@ -48,19 +48,111 @@ def validate_extracted_data_in_chunks(chunks, asset_name, month, year, mtd, thre
 # ==========================================================
 # Asset Name Confidence (0-20)
 # ==========================================================
-def asset_name_confidence_score(asset_name, website_asset_names):
-    best_match, score, _ = process.extractOne(
-        asset_name,
-        website_asset_names,
-        scorer=fuzz.token_sort_ratio
-    )
+IGNORE_WORDS = {
+    "capital", "group", "partners", "partner",
+    "the", "fund", "funds",
+    "lp", "llp", "llc",
+    "ltd", "limited",
+    "inc", "corp", "corporation",
+    "co", "company",
+    "holding", "holdings",
+    "trust", "portfolio",
+    "class", "series"
+}
 
-    normalized_score = round(score / 5, 2)   # 100 -> 20
+STOP_WORDS = {"of", "the", "and", "&"}
+
+
+def normalize_asset_name(name):
+    name = name.lower()
+    name = re.sub(r"[^\w\s]", " ", name)
+    name = re.sub(r"\s+", " ", name).strip()
+
+    words = [word for word in name.split() if word not in IGNORE_WORDS]
+    return " ".join(words)
+
+
+def generate_abbreviation(name):
+    words = [
+        word for word in name.split()
+        if word.lower() not in STOP_WORDS
+    ]
+
+    return "".join(word[0] for word in words if word).lower()
+
+
+def asset_name_confidence_score(asset_name, website_asset_names):
+    normalized_asset = normalize_asset_name(asset_name)
+    asset_abbreviation = generate_abbreviation(normalized_asset)
+
+    normalized_website_assets = [
+        normalize_asset_name(name)
+        for name in website_asset_names
+    ]
+
+    website_abbreviations = [
+        generate_abbreviation(name)
+        for name in normalized_website_assets
+    ]
+
+    scorers = {
+        "WRatio": fuzz.WRatio,
+        "token_set_ratio": fuzz.token_set_ratio,
+        "token_sort_ratio": fuzz.token_sort_ratio,
+        "partial_ratio": fuzz.partial_ratio,
+        "ratio": fuzz.ratio
+    }
+
+    best_score = -1
+    best_match = None
+    best_scorer = None
+
+    print(f"\nExtracted Asset : {asset_name}")
+    print(f"Normalized      : {normalized_asset}")
+    print(f"Abbreviation    : {asset_abbreviation}\n")
+
+    for scorer_name, scorer in scorers.items():
+
+        # Compare full names
+        match, score, index = process.extractOne(
+            normalized_asset,
+            normalized_website_assets,
+            scorer=scorer
+        )
+
+        print(f"{scorer_name:<20} (Name)  -> {website_asset_names[index]:<40} Score: {score:.2f}")
+
+        if score > best_score:
+            best_score = score
+            best_match = website_asset_names[index]
+            best_scorer = scorer_name + " (Name)"
+
+        # Compare abbreviations
+        match, score, index = process.extractOne(
+            asset_abbreviation,
+            website_abbreviations,
+            scorer=scorer
+        )
+
+        print(f"{scorer_name:<20} (Abbr)  -> {website_asset_names[index]:<40} Score: {score:.2f}")
+
+        if score > best_score:
+            best_score = score
+            best_match = website_asset_names[index]
+            best_scorer = scorer_name + " (Abbreviation)"
+
+    print("-" * 80)
+    print(f"Best Scorer : {best_scorer}")
+    print(f"Best Match  : {best_match}")
+    print(f"Best Score  : {best_score:.2f}")
+    print("-" * 80)
 
     return {
         "best_match": best_match,
-        "score": normalized_score
+        "score": round(best_score / 5, 2)
     }
+
+
 
 
 # ==========================================================
@@ -222,7 +314,7 @@ def calculate_final_confidence(chunks,
     # Handle values like "(5.6%)"
     match = re.fullmatch(r"\((\d+(\.\d+)?)%\)", mtd)
     if match:
-        mtd=f"-{match. Group(1)}%"
+        mtd=f"-{match.group(1)}%"
 
     def safe_float(value):
         try:
@@ -246,12 +338,7 @@ def calculate_final_confidence(chunks,
     year,
     mtd
     )
-    print("Validation:", validation)
-    print("Asset:", asset_name)
-    print("Month:", month_num)
-    print("Year:", year)
-    print("MTD:", mtd)
-
+    
     if not validation:
         return 0
     asset_score = asset_name_confidence_score(
@@ -276,8 +363,23 @@ def calculate_final_confidence(chunks,
         + model_score,
         2
     )
-    print(asset_score["score"], month_year_scores["month_score"],month_year_scores["year_score"],mtd_score, model_score)
-    print(total_score)
+    print("=" * 80)
+    print("AI Extraction Results")
+    print("=" * 80)
+
+    print(f"{'Field':<11} {'Extracted Value':<40} {'Confidence'}")
+    print("-" * 80)
+
+    print(f"{'Asset':<11} {str(asset_name):<40} {asset_score['score']}")
+    print(f"{'Month':<11} {str(month_num):<40} {month_year_scores['month_score']}")
+    print(f"{'Year':<11} {str(year):<40} {month_year_scores['year_score']}")
+    print(f"{'MTD':<11} {str(mtd):<40} {mtd_score}")
+    print(f"{'Model Score':<11} {str(model_confidence):<40} {model_score}")
+
+    print("-" * 80)
+    print(f"{'Total Score':<52} {total_score}")
+    print("=" * 80)
+
     return total_score
 
 # score = calculate_final_confidence(
@@ -308,4 +410,5 @@ def calculate_final_confidence(chunks,
 #     "Year": "2026",
 #     "LLMConfidence_Score": "98"
 # }
-#print(calculate_final_confidence(chunks=text,asset_name="RA Capital Healthcare Fund, L.P.",website_asset_names="RA Capital",month_num="May",year="",mtd="+1.3%",model_confidence=55))
+# print(calculate_final_confidence(chunks="text",asset_name="RA Capital Healthcare Fund, L.P.",website_asset_names="RA Capital",month_num="May",year="",mtd="+1.3%",model_confidence=55))
+print(calculate_final_confidence(chunks="text",asset_name="GT Biotech",website_asset_names="Gerber Taylor",month_num="May",year="",mtd="+25.3%",model_confidence=55))
